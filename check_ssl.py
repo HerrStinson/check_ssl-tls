@@ -76,28 +76,33 @@ def ssl_expiry_datetime(hostname):
 def getgrade(payload, num, opts):
 
     API_url = 'https://api.ssllabs.com/api/v2/analyze?'
-    response = requests.get(API_url, params=payload)
+    if opts.proxies:
+        response = requests.get(API_url, proxies=opts.proxies, params=payload)
+    else:
+        response = requests.get(API_url, params=payload)
     status = response.json()["status"]
-    
-    #response = urllib2.urlopen("%s%s"%(API_url, urllib.urlencode(payload)))
-    #status = json.load(response)["status"]
     
     if status != "READY" and num == 2:
         time.sleep(opts.sleep)
-        response = requests.get(API_url, params=payload)
+        if opts.proxies:
+            response = requests.get(API_url, proxies=opts.proxies, params=payload)
+        else:
+            response = requests.get(API_url, params=payload)
         status = response.json()["status"]
-        #response = urllib2.urlopen("%s%s"%(API_url, urllib.urlencode(payload)))
-        #status = json.load(response)["status"]
     elif status == "READY":
-        response = requests.get(API_url, params=payload)
+        if opts.proxies:
+            response = requests.get(API_url, proxies=opts.proxies, params=payload)
+        else:
+            response = requests.get(API_url, params=payload)
         message = response.json()["endpoints"][0]
-        #response = urllib2.urlopen("%s%s"%(API_url, urllib.urlencode(payload)))
-        #message = json.load(response)["endpoints"][0]
         if message["statusMessage"] == "No secure protocols supported":
             print(message["statusMessage"])
             sys.exit(ExitCritical)  
         elif message["statusMessage"] == "Ready":
-            response = requests.get(API_url, params=payload)
+            if opts.proxies:
+                response = requests.get(API_url, proxies=opts.proxies, params=payload)
+            else:
+                response = requests.get(API_url, params=payload)
             grade = response.json()["endpoints"][0]
             #response = urllib2.urlopen("%s%s"%(API_url, urllib.urlencode(payload)))
             #grade = json.load(response)["endpoints"][0]
@@ -212,6 +217,8 @@ def main():
                       help="Specify the number of seconds you want to wait, if not found the result in cache, the defoult value is 45 seconds")
     parser.add_option("-d","--days", dest="days", default=30,type=int,
                       help="specify how many days before it expires will be considered warning, the defoult value is 30 days")
+    parser.add_option("-p","--proxy", dest="proxy", type=str, default=False,
+                      help="Specify proxy server address, i.e. -p http://proxy.domain.tld:3128")
     parser.add_option("-V","--version", action="store_true", dest="version", help="This option show the current version number of the program and exit")
     parser.add_option("-A","--author", action="store_true", dest="author", help="This option show author information and exit")
     (opts, args) = parser.parse_args()
@@ -224,7 +231,13 @@ def main():
         sys.exit()
     if opts.domain == False:
         parser.error("Please, this program requires domain arguments, -H www.ciencias.ulisboa.pt")
-
+    if opts.proxy:
+        opts.proxies = {
+            'http': opts.proxy,
+            'https': opts.proxy
+        }
+    else:
+        opts.proxies = {}
     testssl(opts)
 
 if __name__ == '__main__':
