@@ -22,9 +22,11 @@ The following arguments are optionally invoked, as required by the user:
 -c or --critical used to specify which classifications of ssllabs should be interpreted as critiques. 
 -w or --warning used to specify which classifications of ssllabs should be interpreted as warning. 
 -s or --sleep used to specify the time when the module should wait to continue executing. 
+-p or --proxy used to specify a proxy server address.
 -V or --version used to query the module version. 
 -A or --author used to query the author's data.
 ```
 ### Example command-line execution: 
 ```
-./check_ssl.py -H www.amazon.com -c E+,E,E-,F+,F,F-,T,M -c C+,C-,C,D+,D,D- -d 15
+./check_ssl.py -H www.amazon.com -c E+,E,E-,F+,F,F-,T,M -c C+,C-,C,D+,D,D- -d 15 -p http://proxy.domain.tld:3128
+```
